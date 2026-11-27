@@ -74,11 +74,12 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
         String reward=rewards.get(new Random().nextInt(rewards.size()));
         int duration=Math.max(20,getConfig().getInt("opening.duration-ticks",60));
         Particle particle; try{particle=Particle.valueOf(getConfig().getString("opening.particle","TOTEM_OF_UNDYING"));}catch(IllegalArgumentException ex){particle=Particle.HAPPY_VILLAGER;}
+        final Particle effectParticle=particle;
         new BukkitRunnable(){int tick=0;
             public void run(){
                 if(!p.isOnline()){opening.remove(p.getUniqueId());cancel();return;}
                 Location at=loc.clone().add(0,1.1+Math.sin(tick*.25)*.35,0);
-                loc.getWorld().spawnParticle(particle,at,18,.35,.35,.35,.02);
+                loc.getWorld().spawnParticle(effectParticle,at,18,.35,.35,.35,.02);
                 if(tick%10==0){try{loc.getWorld().playSound(loc,Sound.valueOf(getConfig().getString("opening.sound","BLOCK_BEACON_POWER_SELECT")),1f,1.1f+tick/(float)duration);}catch(IllegalArgumentException ignored){}}
                 if(tick>=duration){
                     loc.getWorld().spawnParticle(Particle.FIREWORK,loc.clone().add(0,1,0),45,.5,.5,.5,.08);
