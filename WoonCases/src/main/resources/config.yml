@@ -1,19 +1,24 @@
-# Встань на блок, где должен стоять кейс, и выполни /wooncases setblock prefixcase ENDER_CHEST
+# Поставь блок под собой: /wooncases setblock prefixcase ENDER_CHEST
+# Название отображается над каждым зарегистрированным блоком.
 menu: prefixcase
 open-menu-command: "dm open %menu% %player%"
+
 reward-display:
   punisher: "<gradient:#ff2020:#8b0000>Каратель</gradient>"
   invincible: "<gradient:#ff69b4:#ff1493>Непобедим</gradient>"
   king: "<gradient:#40a0ff:#1736c7>Король</gradient>"
+
 opening:
   duration-ticks: 60
   particle: TOTEM_OF_UNDYING
   sound: BLOCK_BEACON_POWER_SELECT
   finish-sound: UI_TOAST_CHALLENGE_COMPLETE
-  reveal-height: 2.2
-  message: "<gradient:#ff69b4:#ff0000>Поздравляем, <player>! Ты получил префикс <reward>!</gradient>"
+  radius: 3.0
+
 cases:
   prefixcase:
+    title: "<gradient:#ff69b4:#ff2020><bold>Кейс с Префиксами</bold></gradient>"
+    menu: prefixcase
     rewards:
       - punisher
       - invincible
