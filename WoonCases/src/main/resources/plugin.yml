@@ -1,0 +1,13 @@
+name: WoonCases
+version: 1.0.0
+main: ru.woontime.cases.WoonCases
+api-version: '1.21'
+softdepend: [DeluxeMenus, WoonPrefixes]
+commands:
+  wooncases:
+    description: Управление кейсами
+    usage: /wooncases <setblock|remove|reload>
+    aliases: [wc]
+permissions:
+  wooncases.admin:
+    default: op
