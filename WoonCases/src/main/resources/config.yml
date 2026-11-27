@@ -1,0 +1,16 @@
+# Встань на блок/в точку кейса и выполни /wooncases setblock prefixcase ENDER_CHEST
+menu: prefixcase
+open-menu-command: "dm open %menu% %player%"
+opening:
+  duration-ticks: 60
+  particle: TOTEM_OF_UNDYING
+  sound: BLOCK_BEACON_POWER_SELECT
+  finish-sound: UI_TOAST_CHALLENGE_COMPLETE
+  reveal-height: 2.2
+  message: "<gradient:#ff69b4:#ff0000>Поздравляем, <player>! Ты получил префикс <reward>!</gradient>"
+cases:
+  prefixcase:
+    rewards:
+      - punisher
+      - invincible
+      - king
