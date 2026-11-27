@@ -7,31 +7,25 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public final class WoonPrefixes extends JavaPlugin implements Listener, CommandExecutor {
+public final class WoonPrefixes extends JavaPlugin implements CommandExecutor {
     private final MiniMessage mm = MiniMessage.miniMessage();
     private YamlConfiguration data;
     private File dataFile;
-    private final Map<String,String> defaults = new LinkedHashMap<>();
 
     @Override public void onEnable() {
         saveDefaultConfig();
         dataFile = new File(getDataFolder(), "players.yml");
         if (!dataFile.exists()) try { getDataFolder().mkdirs(); dataFile.createNewFile(); } catch(IOException e) { getLogger().severe(e.getMessage()); }
         data = YamlConfiguration.loadConfiguration(dataFile);
-        getCommand("prefixes").setExecutor(this);
-        Bukkit.getPluginManager().registerEvents(this, this);
+        Objects.requireNonNull(getCommand("prefixes")).setExecutor(this);
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) new PrefixExpansion(this).register();
     }
     public String prefix(String id) { return getConfig().getString("prefixes."+id+".display", ""); }
-    public String selected(UUID uuid) { return data.getString(uuid+".selected", ""); }
     public boolean owns(UUID uuid, String id) { return data.getStringList(uuid+".owned").contains(id); }
     public void grant(UUID uuid, String id) {
         if (prefix(id).isEmpty()) return;
@@ -40,14 +34,14 @@ public final class WoonPrefixes extends JavaPlugin implements Listener, CommandE
         data.set(uuid+".owned", owned); saveData();
     }
     private void saveData() { try { data.save(dataFile); } catch(IOException e) { getLogger().severe("Не удалось сохранить players.yml: "+e.getMessage()); } }
-    private String rendered(Player p) {
-        String id=selected(p.getUniqueId());
-        return id.isEmpty() ? "" : prefix(id);
-    }
+    private String selected(UUID uuid) { return data.getString(uuid+".selected", ""); }
+
     @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
         if (a.length==0) { s.sendMessage("§d/prefixes list | select <id> | give <player> <id> | remove <player> <id>"); return true; }
         if (a[0].equalsIgnoreCase("list")) {
-            for(String id:getConfig().getConfigurationSection("prefixes").getKeys(false)) s.sendMessage("§7- §f"+id+" §8("+PlainTextComponentSerializer.plainText().serialize(mm.deserialize(prefix(id)))+"§8)");
+            if (getConfig().getConfigurationSection("prefixes") == null) return true;
+            for(String id:getConfig().getConfigurationSection("prefixes").getKeys(false))
+                s.sendMessage("§7- §f"+id+" §8("+PlainTextComponentSerializer.plainText().serialize(mm.deserialize(prefix(id)))+"§8)");
             return true;
         }
         if (a[0].equalsIgnoreCase("select") && s instanceof Player p && a.length>=2) {
@@ -68,13 +62,6 @@ public final class WoonPrefixes extends JavaPlugin implements Listener, CommandE
         }
         s.sendMessage("§cНедостаточно прав или неверные аргументы."); return true;
     }
-    @EventHandler public void onChat(AsyncPlayerChatEvent e) {
-        String id=selected(e.getPlayer().getUniqueId());
-        if(id.isEmpty()) return;
-        String raw=getConfig().getString("chat-format","<prefix> <player>: <message>")
-                .replace("<prefix>",prefix(id)).replace("<player>",e.getPlayer().getName()).replace("<message>",e.getMessage());
-        e.renderer((source,displayName,message,viewer)->mm.deserialize(raw));
-    }
     private final class PrefixExpansion extends PlaceholderExpansion {
         private final WoonPrefixes plugin; PrefixExpansion(WoonPrefixes p){plugin=p;}
         @Override public String getIdentifier(){return "woonprefixes";}
@@ -83,8 +70,9 @@ public final class WoonPrefixes extends JavaPlugin implements Listener, CommandE
         @Override public boolean persist(){return true;}
         @Override public String onPlaceholderRequest(Player p,String params){
             if(p==null)return "";
-            if(params.equalsIgnoreCase("selected")) return PlainTextComponentSerializer.plainText().serialize(mm.deserialize(rendered(p)));
-            if(params.equalsIgnoreCase("selected_mini")) return rendered(p);
+            String id=selected(p.getUniqueId());
+            if(params.equalsIgnoreCase("selected")) return id.isEmpty()?"":PlainTextComponentSerializer.plainText().serialize(mm.deserialize(prefix(id)));
+            if(params.equalsIgnoreCase("selected_mini")) return id.isEmpty()?"":prefix(id);
             if(params.startsWith("has_")) return owns(p.getUniqueId(),params.substring(4))?"true":"false";
             return "";
         }
