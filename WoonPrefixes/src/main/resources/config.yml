@@ -1,0 +1,8 @@
+prefixes:
+  punisher:
+    display: "<gradient:#ff2020:#8b0000>Каратель</gradient>"
+  invincible:
+    display: "<gradient:#ff69b4:#ff1493>Непобедим</gradient>"
+  king:
+    display: "<gradient:#40a0ff:#1736c7>Король</gradient>"
+chat-format: "<prefix> <gray><player></gray><dark_gray>: <white><message>"
