@@ -2,6 +2,10 @@ package ru.woontime.prefixes;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.Component;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -12,10 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public final class WoonPrefixes extends JavaPlugin implements CommandExecutor {
+public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, Listener {
     private final MiniMessage mm = MiniMessage.miniMessage();
     private YamlConfiguration data;
     private File dataFile;
+    private final Map<UUID,String> selectedCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -34,7 +39,7 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor {
         data.set(uuid+".owned", owned); saveData();
     }
     private void saveData() { try { data.save(dataFile); } catch(IOException e) { getLogger().severe("Не удалось сохранить players.yml: "+e.getMessage()); } }
-    private String selected(UUID uuid) { return data.getString(uuid+".selected", ""); }
+    private String selected(UUID uuid) { return selectedCache.getOrDefault(uuid, ""); }\n    @EventHandler public void onChat(AsyncChatEvent event) {\n        String id=selected(event.getPlayer().getUniqueId()); if(id.isEmpty() || prefix(id).isEmpty()) return;\n        event.renderer((source, displayName, message, viewer) -> mm.deserialize(prefix(id)).append(Component.space()).append(displayName).append(Component.text(": ")).append(message));\n    }
 
     @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
         if (a.length==0) { s.sendMessage("§d/prefixes list | select <id> | give <player> <id> | remove <player> <id>"); return true; }
@@ -47,7 +52,7 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor {
         if (a[0].equalsIgnoreCase("select") && s instanceof Player p && a.length>=2) {
             String id=a[1].toLowerCase(Locale.ROOT);
             if (!owns(p.getUniqueId(),id)) { p.sendMessage("§cУ тебя нет этого префикса."); return true; }
-            data.set(p.getUniqueId()+".selected",id); saveData(); p.sendMessage(mm.deserialize("<green>Выбран префикс: "+prefix(id))); return true;
+            data.set(p.getUniqueId()+".selected",id); selectedCache.put(p.getUniqueId(),id); saveData(); p.sendMessage(mm.deserialize("<green>Выбран префикс: "+prefix(id))); return true;
         }
         if (a[0].equalsIgnoreCase("give") && s.hasPermission("woomprefixes.admin") && a.length>=3) {
             Player target=Bukkit.getPlayerExact(a[1]); String id=a[2].toLowerCase(Locale.ROOT);
@@ -57,7 +62,7 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor {
         if (a[0].equalsIgnoreCase("remove") && s.hasPermission("woomprefixes.admin") && a.length>=3) {
             Player target=Bukkit.getPlayerExact(a[1]); if(target==null) { s.sendMessage("§cИгрок не в сети."); return true; }
             List<String> owned=data.getStringList(target.getUniqueId()+".owned"); owned.remove(a[2]); data.set(target.getUniqueId()+".owned",owned);
-            if(data.getString(target.getUniqueId()+".selected","").equals(a[2])) data.set(target.getUniqueId()+".selected","");
+            if(data.getString(target.getUniqueId()+".selected","").equals(a[2])) data.set(target.getUniqueId()+".selected",""); selectedCache.remove(target.getUniqueId());
             saveData(); s.sendMessage("§aУдалено."); return true;
         }
         s.sendMessage("§cНедостаточно прав или неверные аргументы."); return true;
