@@ -1,6 +1,10 @@
-# Встань на блок/в точку кейса и выполни /wooncases setblock prefixcase ENDER_CHEST
+# Встань на блок, где должен стоять кейс, и выполни /wooncases setblock prefixcase ENDER_CHEST
 menu: prefixcase
 open-menu-command: "dm open %menu% %player%"
+reward-display:
+  punisher: "<gradient:#ff2020:#8b0000>Каратель</gradient>"
+  invincible: "<gradient:#ff69b4:#ff1493>Непобедим</gradient>"
+  king: "<gradient:#40a0ff:#1736c7>Король</gradient>"
 opening:
   duration-ticks: 60
   particle: TOTEM_OF_UNDYING
