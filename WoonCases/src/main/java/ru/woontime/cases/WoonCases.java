@@ -122,7 +122,7 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
                     try{loc.getWorld().playSound(loc,Sound.valueOf(getConfig().getString("opening.finish-sound","UI_TOAST_CHALLENGE_COMPLETE")),1f,1f);}catch(IllegalArgumentException ignored){}
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"prefixes give "+p.getName()+" "+reward);
                     String message=getConfig().getString("opening.message","<green>Получен префикс <reward>!");
-                    String rewardDisplay=getConfig().getString("reward-display."+reward,reward);
+                    String rewardDisplay="<font:woontime:fantasy>"+getConfig().getString("reward-display."+reward,reward)+"</font>";
                     p.sendMessage(mm.deserialize(message.replace("<player>",p.getName()).replace("<reward>",rewardDisplay)));
                     dyeDisplays.forEach(ItemDisplay::remove);
                     opening.remove(p.getUniqueId());cancel();
