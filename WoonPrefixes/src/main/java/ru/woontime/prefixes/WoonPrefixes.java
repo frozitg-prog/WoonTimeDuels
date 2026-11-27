@@ -1,16 +1,16 @@
 package ru.woontime.prefixes;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.Component;
-import io.papermc.paper.event.player.AsyncChatEvent;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +27,11 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
         dataFile = new File(getDataFolder(), "players.yml");
         if (!dataFile.exists()) try { getDataFolder().mkdirs(); dataFile.createNewFile(); } catch(IOException e) { getLogger().severe(e.getMessage()); }
         data = YamlConfiguration.loadConfiguration(dataFile);
+        for (String key : data.getKeys(false)) {
+            try { UUID uuid=UUID.fromString(key); String id=data.getString(key+".selected",""); if(!id.isEmpty()) selectedCache.put(uuid,id); }
+            catch(IllegalArgumentException ignored) {}
+        }
+        Bukkit.getPluginManager().registerEvents(this,this);
         Objects.requireNonNull(getCommand("prefixes")).setExecutor(this);
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) new PrefixExpansion(this).register();
     }
@@ -39,7 +44,14 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
         data.set(uuid+".owned", owned); saveData();
     }
     private void saveData() { try { data.save(dataFile); } catch(IOException e) { getLogger().severe("Не удалось сохранить players.yml: "+e.getMessage()); } }
-    private String selected(UUID uuid) { return selectedCache.getOrDefault(uuid, ""); }\n    @EventHandler public void onChat(AsyncChatEvent event) {\n        String id=selected(event.getPlayer().getUniqueId()); if(id.isEmpty() || prefix(id).isEmpty()) return;\n        event.renderer((source, displayName, message, viewer) -> mm.deserialize(prefix(id)).append(Component.space()).append(displayName).append(Component.text(": ")).append(message));\n    }
+    private String selected(UUID uuid) { return selectedCache.getOrDefault(uuid, ""); }
+
+    @EventHandler public void onChat(AsyncChatEvent event) {
+        String id=selected(event.getPlayer().getUniqueId());
+        if(id.isEmpty() || prefix(id).isEmpty()) return;
+        event.renderer((source, displayName, message, viewer) ->
+            mm.deserialize(prefix(id)).append(Component.space()).append(displayName).append(Component.text(": ")).append(message));
+    }
 
     @Override public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
         if (a.length==0) { s.sendMessage("§d/prefixes list | select <id> | give <player> <id> | remove <player> <id>"); return true; }
@@ -62,7 +74,7 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
         if (a[0].equalsIgnoreCase("remove") && s.hasPermission("woomprefixes.admin") && a.length>=3) {
             Player target=Bukkit.getPlayerExact(a[1]); if(target==null) { s.sendMessage("§cИгрок не в сети."); return true; }
             List<String> owned=data.getStringList(target.getUniqueId()+".owned"); owned.remove(a[2]); data.set(target.getUniqueId()+".owned",owned);
-            if(data.getString(target.getUniqueId()+".selected","").equals(a[2])) data.set(target.getUniqueId()+".selected",""); selectedCache.remove(target.getUniqueId());
+            if(data.getString(target.getUniqueId()+".selected","").equals(a[2])) { data.set(target.getUniqueId()+".selected",""); selectedCache.remove(target.getUniqueId()); }
             saveData(); s.sendMessage("§aУдалено."); return true;
         }
         s.sendMessage("§cНедостаточно прав или неверные аргументы."); return true;
