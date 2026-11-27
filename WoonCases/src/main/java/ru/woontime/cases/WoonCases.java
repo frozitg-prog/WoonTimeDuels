@@ -85,7 +85,8 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
                     try{loc.getWorld().playSound(loc,Sound.valueOf(getConfig().getString("opening.finish-sound","UI_TOAST_CHALLENGE_COMPLETE")),1f,1f);}catch(IllegalArgumentException ignored){}
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"prefixes give "+p.getName()+" "+reward);
                     String message=getConfig().getString("opening.message","<green>Получен префикс <reward>!");
-                    p.sendMessage(mm.deserialize(message.replace("<player>",p.getName()).replace("<reward>",reward)));
+                    String rewardDisplay=getConfig().getString("reward-display."+reward,reward);
+                    p.sendMessage(mm.deserialize(message.replace("<player>",p.getName()).replace("<reward>",rewardDisplay)));
                     opening.remove(p.getUniqueId());cancel();
                 } tick++;
             }
