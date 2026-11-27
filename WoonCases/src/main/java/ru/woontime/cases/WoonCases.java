@@ -33,7 +33,7 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
         if(a.length>=3&&a[0].equalsIgnoreCase("setblock")){
             String id=a[1].toLowerCase(Locale.ROOT); Material mat=Material.matchMaterial(a[2]);
             if(mat==null||!mat.isBlock()){p.sendMessage("§cНеизвестный материал блока.");return true;}
-            Location loc=p.getLocation().getBlock().getLocation(); loc.getBlock().setType(mat);
+            Location loc=p.getLocation().getBlock().getLocation().subtract(0,1,0); loc.getBlock().setType(mat);
             List<String> entries=locations.getStringList(id);
             String entry=loc.getWorld().getName()+";"+loc.getBlockX()+";"+loc.getBlockY()+";"+loc.getBlockZ();
             if(!entries.contains(entry))entries.add(entry);
