@@ -35,7 +35,10 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
         Objects.requireNonNull(getCommand("prefixes")).setExecutor(this);
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) new PrefixExpansion(this).register();
     }
-    public String prefix(String id) { return getConfig().getString("prefixes."+id+".display", ""); }
+    public String prefix(String id) {
+        String display=getConfig().getString("prefixes."+id+".display", "");
+        return display.isEmpty() ? "" : "<font:woontime:fantasy>"+display+"</font>";
+    }
     public boolean owns(UUID uuid, String id) { return data.getStringList(uuid+".owned").contains(id); }
     public void grant(UUID uuid, String id) {
         if (prefix(id).isEmpty()) return;
