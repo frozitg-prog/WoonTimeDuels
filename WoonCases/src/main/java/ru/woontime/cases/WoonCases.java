@@ -138,7 +138,7 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
                 try{
                     Location loc=new Location(world,Integer.parseInt(v[1])+.5,Integer.parseInt(v[2])+2.35,Integer.parseInt(v[3])+.5);
                     TextDisplay display=world.spawn(loc,TextDisplay.class);
-                    display.text(mm.deserialize("<font:woontime:fantasy>"+title+"</font>"));
+                    display.text(mm.deserialize(title));
                     display.setBillboard(Display.Billboard.CENTER);
                     display.setAlignment(TextDisplay.TextAlignment.CENTER);
                     display.setSeeThrough(true);
@@ -174,7 +174,7 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
                 "<dark_purple>╔══════════════════════════════╗</dark_purple>\n"+
                 "<gradient:#ff69b4:#ff2020><bold>       ПОЗДРАВЛЯЕМ!</bold></gradient>\n"+
                 "<white>Ты выиграл префикс:</white>\n"+
-                "<font:woontime:fantasy>"+display+"</font>\n"+
+                display+"\n"+
                 "<green>Тебе выдан префикс!</green>\n"+
                 "<dark_purple>╚══════════════════════════════╝</dark_purple>\n"+
                 "<light_purple><bold>             WOONDUELS</bold></light_purple>");
