@@ -8,6 +8,9 @@ commands:
     description: Управление кейсами
     usage: /wooncases <setblock|remove|reload>
     aliases: [wc]
+  case:
+    description: Открыть выбранный кейс рядом с блоком
+    usage: /case open <id>
 permissions:
   wooncases.admin:
     default: op
