@@ -66,12 +66,12 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
             if (!owns(p.getUniqueId(),id)) { p.sendMessage("§cУ тебя нет этого префикса."); return true; }
             data.set(p.getUniqueId()+".selected",id); selectedCache.put(p.getUniqueId(),id); saveData(); p.sendMessage(mm.deserialize("<green>Выбран префикс: "+prefix(id))); return true;
         }
-        if (a[0].equalsIgnoreCase("give") && s.hasPermission("woomprefixes.admin") && a.length>=3) {
+        if (a[0].equalsIgnoreCase("give") && s.hasPermission("woonprefixes.admin") && a.length>=3) {
             Player target=Bukkit.getPlayerExact(a[1]); String id=a[2].toLowerCase(Locale.ROOT);
             if(target==null || prefix(id).isEmpty()) { s.sendMessage("§cИгрок должен быть онлайн, а ID префикса — существовать."); return true; }
             grant(target.getUniqueId(),id); target.sendMessage(mm.deserialize("<green>Тебе выдан префикс "+prefix(id))); s.sendMessage("§aВыдано."); return true;
         }
-        if (a[0].equalsIgnoreCase("remove") && s.hasPermission("woomprefixes.admin") && a.length>=3) {
+        if (a[0].equalsIgnoreCase("remove") && s.hasPermission("woonprefixes.admin") && a.length>=3) {
             Player target=Bukkit.getPlayerExact(a[1]); if(target==null) { s.sendMessage("§cИгрок не в сети."); return true; }
             List<String> owned=data.getStringList(target.getUniqueId()+".owned"); owned.remove(a[2]); data.set(target.getUniqueId()+".owned",owned);
             if(data.getString(target.getUniqueId()+".selected","").equals(a[2])) { data.set(target.getUniqueId()+".selected",""); selectedCache.remove(target.getUniqueId()); }
