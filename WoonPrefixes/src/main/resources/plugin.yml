@@ -1,0 +1,13 @@
+name: WoonPrefixes
+version: 1.0.0
+main: ru.woontime.prefixes.WoonPrefixes
+api-version: '1.21'
+softdepend: [PlaceholderAPI]
+commands:
+  prefixes:
+    description: Управление префиксами
+    usage: /prefixes <list|select|give|remove>
+    aliases: [wprefix]
+permissions:
+  woonprefixes.admin:
+    default: op
