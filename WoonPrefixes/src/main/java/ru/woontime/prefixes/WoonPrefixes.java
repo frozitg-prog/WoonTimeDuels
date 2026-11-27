@@ -37,7 +37,7 @@ public final class WoonPrefixes extends JavaPlugin implements CommandExecutor, L
     }
     public String prefix(String id) {
         String display=getConfig().getString("prefixes."+id+".display", "");
-        return display.isEmpty() ? "" : "<font:woontime:fantasy>"+display+"</font>";
+        return display;
     }
     public boolean owns(UUID uuid, String id) { return data.getStringList(uuid+".owned").contains(id); }
     public void grant(UUID uuid, String id) {
