@@ -5,10 +5,13 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.*;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
@@ -67,6 +70,20 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
         else p.sendMessage("§cДля меню кейса установи DeluxeMenus.");
         beginOpening(p,found,b.getLocation().add(.5,0,.5));
     }
+    private ItemDisplay spawnDye(Location location, Material material){
+        ItemDisplay display=location.getWorld().spawn(location,ItemDisplay.class);
+        display.setItemStack(new ItemStack(material));
+        display.setBillboard(Display.Billboard.CENTER);
+        display.setPersistent(false);
+        display.setInvulnerable(true);
+        return display;
+    }
+    private void playOpeningSound(Location loc,float pitch){
+        try{
+            Sound sound=Sound.valueOf(getConfig().getString("opening.sound","BLOCK_BEACON_POWER_SELECT"));
+            loc.getWorld().playSound(loc,sound,1f,pitch);
+        }catch(IllegalArgumentException ignored){}
+    }
     private void beginOpening(Player p,String id,Location loc){
         if(!opening.add(p.getUniqueId()))return;
         List<String> rewards=getConfig().getStringList("cases."+id+".rewards");
@@ -75,12 +92,31 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
         int duration=Math.max(20,getConfig().getInt("opening.duration-ticks",60));
         Particle particle; try{particle=Particle.valueOf(getConfig().getString("opening.particle","TOTEM_OF_UNDYING"));}catch(IllegalArgumentException ex){particle=Particle.HAPPY_VILLAGER;}
         final Particle effectParticle=particle;
+        final List<ItemDisplay> dyeDisplays=new ArrayList<>();
+        final Material[] dyeMaterials={Material.RED_DYE,Material.BLUE_DYE,Material.PURPLE_DYE};
         new BukkitRunnable(){int tick=0;
             public void run(){
-                if(!p.isOnline()){opening.remove(p.getUniqueId());cancel();return;}
+                if(!p.isOnline()){
+                    dyeDisplays.forEach(ItemDisplay::remove);
+                    opening.remove(p.getUniqueId());cancel();return;
+                }
+                for(int i=0;i<dyeMaterials.length;i++){
+                    if(tick==i*8){
+                        Location dyeLoc=loc.clone().add(0,0.75+i*0.48,0);
+                        dyeDisplays.add(spawnDye(dyeLoc,dyeMaterials[i]));
+                        playOpeningSound(loc,0.85f+i*0.18f);
+                    }
+                }
+                for(int i=0;i<dyeDisplays.size();i++){
+                    ItemDisplay display=dyeDisplays.get(i);
+                    if(display.isValid()){
+                        Location hover=loc.clone().add(0,0.75+i*0.48+Math.sin(tick*0.18+i)*0.06,0);
+                        display.teleport(hover);
+                    }
+                }
                 Location at=loc.clone().add(0,1.1+Math.sin(tick*.25)*.35,0);
                 loc.getWorld().spawnParticle(effectParticle,at,18,.35,.35,.35,.02);
-                if(tick%10==0){try{loc.getWorld().playSound(loc,Sound.valueOf(getConfig().getString("opening.sound","BLOCK_BEACON_POWER_SELECT")),1f,1.1f+tick/(float)duration);}catch(IllegalArgumentException ignored){}}
+                if(tick%10==0)playOpeningSound(loc,1.1f+tick/(float)duration);
                 if(tick>=duration){
                     loc.getWorld().spawnParticle(Particle.FIREWORK,loc.clone().add(0,1,0),45,.5,.5,.5,.08);
                     try{loc.getWorld().playSound(loc,Sound.valueOf(getConfig().getString("opening.finish-sound","UI_TOAST_CHALLENGE_COMPLETE")),1f,1f);}catch(IllegalArgumentException ignored){}
@@ -88,8 +124,10 @@ public final class WoonCases extends JavaPlugin implements Listener, CommandExec
                     String message=getConfig().getString("opening.message","<green>Получен префикс <reward>!");
                     String rewardDisplay=getConfig().getString("reward-display."+reward,reward);
                     p.sendMessage(mm.deserialize(message.replace("<player>",p.getName()).replace("<reward>",rewardDisplay)));
+                    dyeDisplays.forEach(ItemDisplay::remove);
                     opening.remove(p.getUniqueId());cancel();
-                } tick++;
+                }
+                tick++;
             }
         }.runTaskTimer(this,0L,2L);
     }
